@@ -1,0 +1,849 @@
+KUBERNETES COMMANDS(K8S):-
+minikube status
+kubectl run [pod_name] --image=[image_name]
+kubectl get pods 
+kubectl create -f [file_name] ---> -f means file  -- first time create
+kubectl apply -f [file_name] ---> -f means file   -- already create but made change again should create
+kubectl api-resources  
+kubectl get po -o wide  ---> to get more details about pod raw formate
+kubectl get po -o yaml  ---> to get more details about pod yaml formate
+kubectl get po -o json  ---> to get more details about pod json formate
+kubectl discribe pod [pod_name]  --->just like inspect
+kubectl exec -it [pod_name] bash    ---->go inside the pod
+kubectl logs [pod_name] -c [containername] ---> -c means conatainer
+kubectl delete pod [pod_names]
+kubectl delete pod --all
+kubectl get po --show-labels  ----> its will show pod labels
+kubectl get po -l [lablekey=labelvalue]  ----> -l means label
+kubectl get po -l [lablekey!=labelvalue]   --> execpt that labelkey and value we will get remaining pods
+kubectl label pods [pod_name] [labelkey:labelvalue]
+kubectl get pods -l '(lablekey in (labelvalue1,labelvalue2)'   --> it will get labelvalue1 labelvalue2 pods
+kubectl delete pod -l [labelkey:labelvalue]
+aws s3 mb  s3://user_name.k8s.local  ----> mb means makebucket create a s3 bucket
+export KOPS_STATE_STORE=s3://[user_name].k8s.local --->that will store all kops related information
+kops create cluster --name [username].k8s.local --zones us-east-1a --master-size t2.medium --node-size t2.micro   --->create a cluster
+kubectl get no -o wide 
+kops delete cluster --name [cluster_name] --yes
+kubectl delete svc --all
+vim -o [file1] [file2]  ----> we can see both file1 and file2 in same screen
+kubectl scale rc [replicationcontroller_name] --replicas [number] -------> rc means Replicationcontroller
+kubectl delete rc [replicationcontroller_name]   -------> rc means Replicationcontroller
+kubectl delete rc [replicationcontroller_name] --cascade-orphan   ---> it will delete the rc but pods and containers is still is there
+kubectl get rc -o wide
+kubectl get rs -o wide-----> rs means replicaset
+kubectl delete rc [replicaset_name]
+kubectl set image deployment/[deployment_name] [container_name]=[image_name]  -----> to update the image in deployement
+kubectl rollout history deployment/[deployment_name]  ----> all image changes history
+kubectl rollout undo deployment/[deployment_name] --to-revision=[version_number]  ----> rollout to particular version(image)
+kubectl rollout status deployment/[deployment_name]
+kubectl autoscale deployment/[deployment_name] --min=[number] --max=[number] 
+kubectl autoscale deployment/[deployment_name] --min=[number] --max=[number] --cpu-percent=[number]  ---> based on the cpu utilization autoscale happen
+kubectl get hpa  --->hpa means horizantal pod autoscaler
+kubectl get ds --->ds means daemonset
+kubectl get ns ---> ns means name space
+kubectl create ns [namespace]
+kubectl get all -n kube-public  ---> n means namespace
+kubectl config view --minfiy | grep namespace ----->current name space
+kubectl config set-context --current --namespace=[namespace]  ----> to go namesapce
+kubectl run [pod_name] --image=[image_name] -n [namesapce]  -----> with out going into the namespace creating pod
+kubectl create cm [configmap_name] --from-literal=name=[name] --from-literal=course=[cousre_name] --from-literal=Place=[place_name]
+kubectl create cm [configmap_name] --from-file=[filename] ----> cm means configmap
+kubectl create cm [configmap_name] --from-env-file=[filename]
+kubectl apply cm [configmap_name] --from-env-file=[filename]
+kubectl create cm [configmap_name] --from-file=[foldername]
+kubectl create -f [file_name].yaml 
+kubectl get cm
+printenv
+kubectl create secret generic [secret_name] --from-literal=username=[username] --from-literal=password=[password] 
+kubectl create secret docker-registry [secret_name] --docker-server=https://index.docker.io/v1/ -- docker-username=[Docker_username] --docker-password=[docker_password]
+kubectl get ing   ----> ing means ingress
+helm repo add [repo_name] [Repo_url]
+helm repo list
+helm create [helm_name] 
+helm install [release_name] . 
+helm list  
+helm upgrade [release_name] .
+helm rollback [release_name] [version_number]  
+helm uninstall [release_name]
+helm install [release_name] --debug --dry-run
+helm template .
+helm history [release_name]
+kubectl config set-crendentials [username] --client-certificate=[user_name].crt --client-key=[user_name].key
+kubectl config set-context [context_name] --cluster=minikube --user=[user_name]
+kubectl config view
+kubectl config use-context [context_name]
+kubectl config view --minify
+kubectl get clusterrolebinding | grep -i [context_name]
+kubectl config use-context --current --namesapce=[namesapce]
+
+https://github.com/devops0014/k8s-stateful-set-application/tree/master
+owasp ---->open source web application secure project to see all the dependencies is there or not
+trivy----> is used to scan the images 
+argoCD -----> is used to continoues deployement   create a manefest files and pushed into git
+Prometheus & Grafana ----> prometheus is used to monitering purpose Grafana  is used to take the data and show in graphial representation
+
+
+
+
+
+
+
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  ports: 
+	   - conatainerPort: 80
+...
+
+service.yaml(clusterIp):-
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  labels:
+  env: dev
+spec:
+  type: clusterIp
+  selcetors:-
+	     env: dev
+   ports: 
+    - port: 80
+	  targetPort: 80
+...
+
+
+service.yaml(NodePort):-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  labels:
+  env: dev
+spec:
+  type: nodePort
+  selcetors:-
+	     env: dev
+   ports:
+     - port: 80   
+	   targetPort: 80
+	   nodePort: 30004
+	  
+...
+
+service.yaml(LoadBalancer):-
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  labels:
+  env: dev
+spec:
+  type: LoadBalancer
+  selcetors:-
+	     env: dev
+   ports:
+     - port: 80   
+	   targetPort: 80
+	   nodePort: 30004
+	  
+...
+
+ReplicationController yaml:-
+
+---
+apiVersion: v1
+Kind : ReplicationController
+metadata:
+ name: myrc
+spec:
+ replicas: 3
+ selector:
+    env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+    spec:
+      conatainers:
+	     - name: cont1
+	       image: ngnix
+	   ports:
+	     - containerPort: 80 
+	  
+...
+
+ReplicaSet yaml:-
+
+---
+apiVersion: app/v1
+Kind : ReplicaSet
+metadata:
+ name: myrs
+spec:
+ replicas: 3
+ selector:
+   matchLables:
+      env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+    spec:
+      conatainers:
+	     - name: cont1
+	       image: ngnix
+	       ports:
+	         - containerPort: 80 
+	  
+...
+
+Deployment yaml:-
+
+---
+apiVersion: app/v1
+Kind : Deployment
+metadata:
+ name: mydep
+spec:
+ replicas: 5
+ selector:
+   matchLables:
+      env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+    spec:
+      conatainers:
+	     - name: cont1
+	       image: ngnix
+	       ports:
+	         - containerPort: 80 
+	  
+...
+
+pod with volume yaml:-
+
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/vinny
+		 
+	- name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/naveen
+	   
+  volumes:
+   - name: vol-1
+	 emptyDir: {}
+...
+
+Deployment with volume(emptyDir) yaml:-
+
+---
+apiVersion: app/v1
+Kind : Deployment
+metadata:
+ name: mydep
+spec:
+ replicas: 5
+ selector:
+   matchLables:
+      env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+   spec:
+     conatainers:
+       - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/vinny
+		 
+	   - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/naveen
+	   
+     volumes:
+       - name: vol-1
+	     emptyDir: {}
+	  
+...
+
+Deployment with volume(HostPath) yaml:-
+
+---
+apiVersion: app/v1
+Kind : Deployment
+metadata:
+ name: mydep
+spec:
+ replicas: 5
+ selector:
+   matchLables:
+      env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+   spec:
+     conatainers:
+       - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/vinny
+		 
+	   - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/naveen
+	   
+     volumes:
+       - name: vol-1
+	     hostPath:
+		 path: "/temp/mydata"
+	  
+...
+
+
+persistentVolume.yaml:-
+---
+apiVersion: v1
+kind: persistentVolume
+metadata:
+ name: mypc
+spec:
+ capacity: 
+   storage: 10Gi
+ accessModes:
+   - ReadWriteOnce
+ PersistentVolumeReclaimPolicy: Recycle
+ awsElasticBlockStore:
+   volumeID: vol1-898bujbnn8njhi0
+   fsType: ext4  
+  
+...  
+
+persistentVolumeClaim.yaml:-
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mypvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage:3Gi
+
+---  
+
+Deployment with volume(persistentVolumeClaim) yaml:-
+
+---
+apiVersion: app/v1
+Kind : Deployment
+metadata:
+ name: mydep
+spec:
+ replicas: 5
+ selector:
+   matchLables:
+      env: dev
+ template:
+   metadata:
+     labels:
+	   env: dev
+   spec:
+     conatainers:
+       - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/vinny
+		 
+	   - name: cont1
+	     image: nginx
+	     command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	     volumeMount:
+	       - name: vol-1
+	         mountPath: /temp/naveen
+	   
+     volumes:
+       - name: vol-1
+	     persistentVolumeClaim:
+		 claimName: mypvc
+	  
+...
+
+
+configmap.yaml:-
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: myconfigmap
+data:
+  DATABASE_URL: www.mysql.com
+  PORT: "3306"
+
+...
+
+
+pod with volume along configMapKeyref yaml:-
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/vinny
+		 
+	- name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/naveen
+		
+	   env:
+	    - name: mahesh
+		  valueFrom:
+		   configMapKeyref:
+		    name: [configmap_name]
+			key: [configMap_key]
+			
+	  
+	   
+  volumes:
+   - name: vol-1
+	 emptyDir: {}
+...
+
+
+
+pod with volume yaml:-
+configMapref
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/vinny
+		 
+	- name: cont1
+	  image: nginx
+	  command: ["/bin/bash" "-c" "while true; do echo welcome devops; sleep 5; done"]
+	  volumeMount:
+	   - name: vol-1
+	     mountPath: /temp/naveen
+		
+	   envFrom:
+		  configMapref:
+		   name: [configmap_name]
+		   
+			
+	  
+	   
+  volumes:
+   - name: vol-1
+	 emptyDir: {}
+...
+
+configmap mounting to volume
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  volumeMounts:
+	    - name: myvolume
+		  mountPath: "/Sri"
+		  readyOnly: true
+		  
+    volumes:
+   - name: myvolume
+	 configMap:
+	  name:[configMap_name]
+	  
+...	  
+
+
+secret linking to pod
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  env:
+	   - name: rohit
+	     valueFrom:
+		   secretKeyref:
+		     key: username
+			 name: [secret_name]
+			 
+...			 
+
+pod with securty for private image
+
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: [username/repo]
+	  ports: 
+	   - conatainerPort: 80
+  imagePullSecrets: 
+     - name: [secret_name]
+...
+
+job.yaml with multipull command
+---
+apiVersion: batch/v1
+kind: job
+metadata: 
+  name:testjob
+spec:
+  template:
+    metadata:
+	  name: testjob
+	spec:
+      conatainers:
+         - name: cont-1
+           image: ubuntu
+           command: ["bin/bash"]
+		   args:
+		    - |
+			  sudo apt update -y
+			  touch kops.pdf
+			  mkdir devops
+			  sleep 60
+      restartPolicy: never  			  
+            		   
+...
+
+cronjob.yaml with multipull command
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: 
+  name:mycronJob
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+	spec:
+	  template:
+	    spec:
+		  conatainers:
+             - name: cont-1
+               image: ubuntu
+               command: ["bin/bash"]
+		       args:
+		         - |
+			      sudo apt update -y
+			      touch kops.pdf
+			      mkdir devops
+			      sleep 60
+        restartPolicy: never  
+      			  
+            		   
+...
+
+
+Ingress perpose:-
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: one
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: swiggy
+  template:
+    metadata:
+      labels:
+        app: swiggy
+    spec:
+      containers:
+      - name: cont-1
+        image: nginx
+        ports:
+        - containerPort: 80
+        env:
+        - name: TITLE
+          value: "NGINX APP1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+  selector:
+    app: swiggy
+	
+...	
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: two
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zomato
+  template:
+    metadata:
+      labels:
+        app: zomato
+    spec:
+      containers:
+      - name: cont-2
+        image: httpd
+        ports:
+        - containerPort: 80
+        env:
+        - name: TITLE
+          value: "APACHE APP2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpd
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+  selector:
+    app: zomato
+	
+...
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /nginx(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80
+      - path: /httpd(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: httpd
+            port:
+              number: 80
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx
+            port:
+              number: 80	
+...			  
+
+
+reource quota:-
+
+pod.yaml:-
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  labels:
+  env: dev
+spec:
+  conatainers:
+    - name: cont1
+	  image: nginx
+	  resources:
+	   requests:
+	     memory: "64Mi"
+		 cpu: "250m"
+       limits:
+         memory: "128Mi"
+         cpu: "250Mi"		 
+	  ports: 
+	   - conatainerPort: 80
+...
+RequestQuota.yaml:-
+
+---
+apiVersion: v1
+kind: RequestQuota
+metadata:
+  name: bank-rq
+spec:
+  hard:
+    limits.cpu: "200m"
+	requests.cpu: "150m"
+	limits.memory: "38Mi"
+	requests.memory: "12Mi"
+	
+...	
+
+
+Role.yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+ name: dev-role
+ namespace: dev
+rules:
+- apiGroups: ["*"]
+  resources: ["pods", "deployement"]
+  verds: ["get", "list", "create"]
+
+- apiGroups: ["*"]
+  resources: ["service"]
+  verbs: ["create", "delete"] 
+---
+Rolebinding.yaml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dev-role
+  namespace: dev
+
+subjects:
+  - kind: User
+    name: [User_name]
+    apiGroups: rbac.authorization.k8s.io
+roleRef:
+    kind: Role
+	name: dev-role
+	apiGroups: rbac.authorization.k8s.io
+
+...
+
+
+ClusterRole.yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+ name: dev-cluster-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods", "service"]
+  verds: ["get", "list", "create"]
+
+---
+
+ClusterRolebinding.yaml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dev-cluster-rolebinding
+
+subjects:
+  - kind: User
+    name: [User_name]
+    apiGroups: rbac.authorization.k8s.io
+roleRef:
+    kind: ClusterRole 
+	name: dev-cluster-role
+	apiGroups: rbac.authorization.k8s.io
+
+...

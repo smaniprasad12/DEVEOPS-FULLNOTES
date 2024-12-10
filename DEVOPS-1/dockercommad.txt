@@ -1,0 +1,126 @@
+DOCKER COMMANDS:-
+yum install docker -y
+docker version
+systemctl status docker
+systemctl start docker
+docker images
+docker ps
+docker ps -a
+vim Dockerfile
+docker build -t [image_name] [path_dockerfile]
+docker run -itd --name [container_name] -p 8081:80 [image_name]  -----> -itd means Interactive terminal deattach, -p means publish
+docker pull images
+docker info
+docker exec -it [container_name] bash   ---> go inside the container
+docker search [image_name]
+docker rm [container_name]
+docker rmi [image_name]
+docker rm $(docker ps -a -q)     ------>remove all the container
+exit ---> is used to exit the container
+docker build -t [image_name] . --build-arg="[arg=arg_value]"
+docker ps -a -f "status=exicted" -----> -f means filter
+docker contianer prune --->this command is used to remove all the container in exicted state(unused)
+docker start $(docker ps -a)  
+docker stop $(docker ps)  ------>to stop all the running containers
+docker inspect [container_name]  --> to get the all details of container
+docker image inspect [image_name] ---> to get the all details of image
+docker ps --latest
+docker ps -n [number]  ----------> it will get the latest number of conatiners
+curl [containe_IP]  ---->it will give access to container internally
+docker tag [image_name] [account-name]/[repository_name]:[image_name]   -----> this is used to tag the image to dockerhub account
+ex:-
+docker tag  image1 sidmanipras/pratices:image1 
+docker push [image_name]:[tag] ---> this command is used to push the image to dockerhub
+docker volume create [volume_name]
+docker run -itd --name [container_name] -v [path volume to create] [image_name]  ------>commad to create a container along with volume
+docker volume ls ----> list of volumes
+docker volume inspect [volume_id] 
+docker run -itd --name [NewContainer_name] --privileged=true --volumes-from=[volumecontainer_name] [image_name]   ---> command is used to one container is having volume that is sharing to another new conatiner
+docker run -itd --name [NewContainer_name] -v "$(pwd)":/[pathToCreateVolume] [image_name] -->pwd is represent the current path next pathToCreateVolume means its a path create volume like foldername
+docker run -itd --name [NewContainer_name] --mount source=[pathofvolume],destination=[pathofvolumeincontainer] ubuntu
+docker volume prune ---> this command is used to remove all the volume in unused state
+docker network create [network_name]
+docker network ls
+docker run -itd --name [container_name] --network=[network-name] [image_name]
+ping IP_address ----->this command check the nextwork connection is present or not
+docker network connect [network_name] [container_name] --->this command is used to connect the network with another network container
+docker network disconnect [network_name] [container_name]
+docker swarm init --advertise-addr [instance_privateIP]  --->to generate a swarm token
+docker swarm join-token [master/worker]  --->generate a token  to add master or worker in cluster
+docker swarm leave , docker node rm [leaveserviceid] --->docker swarm leave command we need to give in worker docker node rm serviceid we need to give in master to leave from cluster
+docker node ls ---> list of services in cluster
+docker service ls 
+docker service create --name [service_name] --publish [hostport]:80 [image_name]
+docker service create --name [service_name] --publish [hostport]:80 --replicas Number [image_name]
+docker service scale [service_name]=[No of conatiner] -----> this command is used to increase the conatiner for existing service
+docker service ps [service_name]
+docker service update --image [newImagename] [existingserviename]  --->update the image to existing service
+docker service rollback [servicename] ---> its service rollback the previous image
+docker service logs [servicename]
+docker service inspect [servicename]
+docker-compose up -d
+docker-compose down
+docker-compose build
+docker-compose stop
+docker-compose start
+docker-compose config
+docker-compose images
+docker-compose logs
+
+
+
+
+
+FROM centos:centos7
+MAINTAINER Mani Prasad
+
+# Modify CentOS repo files to use CentOS Vault
+RUN sed -i 's/^mirrorlist/#mirrorlist/' /etc/yum.repos.d/CentOS* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|' /etc/yum.repos.d/CentOS*
+
+# Clean YUM cache and update repositories
+RUN yum clean all && yum update -y
+
+# Install httpd
+RUN yum install httpd -y
+
+# Copy the index.html file to the web root
+COPY index.html /var/www/html/
+
+# Start the Apache HTTPD server
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+
+
+
+image----> OWASP is used scan the image
+
+
+
+yum install -y java-17-amazon-corretto-headless
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+yum install jenkins -y
+systemctl start jenkins
+
+
+curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+ls /usr/local/bin
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose version
+
+  
+---
+version: "3"
+services:
+   ruksar:
+    image: shaikmustafa/dm
+	Ports:
+	 - 8081:80
+   
+   mani:
+     image: shaikmustafa/cycle
+	 ports:
+	 - 8082:80
+	 
+...	 
